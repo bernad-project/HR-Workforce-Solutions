@@ -42,22 +42,38 @@ async function utama(): Promise<void> {
     return
   }
 
-  const hasil = await semaiPemilik(url, {
-    email,
-    kataSandi,
-    nama: process.env.OWNER_NAME?.trim() || 'Pemilik',
-    namaPerusahaan: process.env.COMPANY_LEGAL_NAME?.trim() || undefined,
-  })
+  /**
+   * Kegagalan di sini sengaja TIDAK menjatuhkan penempatan.
+   *
+   * Tabelnya sudah terbuat — yang gagal hanya pembuatan akun, dan penyebabnya
+   * hampir selalu nilai pengaturan yang keliru, misalnya kata sandi kurang dari
+   * 12 karakter. Menjatuhkan seluruh penempatan karena satu salah ketik berarti
+   * seluruh sistem ikut mati, padahal yang perlu diperbaiki cuma satu kotak
+   * isian. Halaman masuk yang akan memberi tahu pemilik apa yang kurang.
+   */
+  try {
+    const hasil = await semaiPemilik(url, {
+      email,
+      kataSandi,
+      nama: process.env.OWNER_NAME?.trim() || 'Pemilik',
+      namaPerusahaan: process.env.COMPANY_LEGAL_NAME?.trim() || undefined,
+    })
+    garis(hasil.dibuat ? `Akun pemilik dibuat: ${hasil.email}` : `Akun ${hasil.email} sudah ada.`)
 
-  garis(hasil.dibuat ? `Akun pemilik dibuat: ${hasil.email}` : `Akun ${hasil.email} sudah ada.`)
-
-  const pengaturan = await bacaPengaturanPerusahaan(url)
-  if (pengaturan) garis(`Perusahaan: ${pengaturan.legalName}`)
+    const pengaturan = await bacaPengaturanPerusahaan(url)
+    if (pengaturan) garis(`Perusahaan: ${pengaturan.legalName}`)
+  } catch (galat) {
+    const pesan = galat instanceof Error ? galat.message : String(galat)
+    garis(`Akun pemilik BELUM dibuat: ${pesan}`)
+    garis('Perbaiki nilainya di Environment Variables, lalu jalankan penempatan ulang.')
+    garis('Penempatan diteruskan — tabelnya sudah siap.')
+  }
 }
 
 utama().catch((galat: unknown) => {
   const pesan = galat instanceof Error ? galat.message : String(galat)
   console.error(`[persiapan] GAGAL: ${pesan}`)
+  // Sampai di sini artinya MIGRASI yang gagal, bukan pembuatan akun.
   // Migrasi yang gagal berarti basis data tidak dalam keadaan yang diharapkan.
   // Menempatkan aplikasi di atas basis data seperti itu lebih berbahaya daripada
   // penempatan yang gagal terang-terangan, jadi pembangunan dihentikan.
