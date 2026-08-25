@@ -82,22 +82,29 @@ KATA_SANDI='kata sandi minimal 12 huruf' \
 
 ## Menaruhnya di internet (Vercel)
 
-1. Di Vercel, buat proyek baru dari repositori ini.
-2. Di **Marketplace**, tambahkan **Neon Postgres**. Vercel akan mengisi
-   `DATABASE_URL` sendiri. Pastikan yang dipakai adalah alamat ber-`-pooler`.
-3. Isi variabel lingkungan lain sesuai `.env.example`: `AUTH_SECRET`,
-   `OWNER_EMAIL`, `OWNER_PASSWORD`, `OWNER_NAME`, `COMPANY_LEGAL_NAME`.
-4. Setelah penempatan pertama berhasil, jalankan sekali dari komputer Anda
-   dengan `DATABASE_URL` produksi:
+Tidak perlu terminal sama sekali.
 
-   ```bash
-   npm run db:migrate
-   npm run db:seed
-   ```
+1. Di Vercel, buat proyek baru dari repositori ini. Penempatan pertama akan
+   berhasil walau belum ada apa-apa — yang muncul adalah halaman **Persiapan**
+   yang menyebutkan apa saja yang masih kosong.
+2. Buka tab **Storage** → **Neon Postgres** dari Marketplace → sambungkan ke
+   proyek ini. Vercel mengisi `DATABASE_URL` sendiri.
+3. Buka **Settings → Environment Variables**, tambahkan:
+   - `AUTH_SECRET` — teks acak minimal 32 karakter
+   - `OWNER_EMAIL` dan `OWNER_PASSWORD` — akun pertama Anda (sandi minimal 12 karakter)
+   - `OWNER_NAME` dan `COMPANY_LEGAL_NAME` — opsional
+4. Jalankan **Redeploy** sekali.
 
-Migrasi **tidak** dijalankan otomatis saat penempatan. Itu disengaja: perubahan
-basis data produksi sebaiknya terjadi karena Anda memutuskan, bukan karena
-kebetulan ada penempatan baru.
+Pada penempatan itu, pembuatan seluruh tabel dan akun pemilik pertama berjalan
+sendiri, lalu halaman Persiapan hilang dan halaman masuk yang tampil.
+
+**Kenapa migrasi dijalankan otomatis saat penempatan.** Biasanya perubahan basis
+data produksi sebaiknya dijalankan manual. Tapi pemilik sistem ini bukan
+programmer, dan pembuatan tabel yang menuntut satu perintah baris perintah
+berarti sistemnya tidak akan pernah benar-benar jalan. Yang dijalankan tetap
+migrasi berbasis berkas yang sudah di-commit dan diuji — bukan `db push`, yang
+memang dilarang. Bila migrasinya gagal, penempatan ikut gagal terang-terangan,
+bukan diam-diam menempatkan aplikasi di atas basis data yang tidak sesuai.
 
 ---
 

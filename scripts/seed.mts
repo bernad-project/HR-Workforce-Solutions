@@ -7,13 +7,7 @@
  * tidak membuat akun kedua dan tidak menimpa kata sandi yang berlaku.
  */
 import './env.mts'
-import { eq } from 'drizzle-orm'
-import { drizzle } from 'drizzle-orm/node-postgres'
-import { Pool } from 'pg'
-import bcrypt from 'bcryptjs'
-import * as schema from '../lib/db/schema'
-import { companySettings, users } from '../lib/db/schema'
-import { skemaKataSandiBaru } from '../lib/validation/auth'
+import { bacaPengaturanPerusahaan, semaiPemilik } from './lib-persiapan.mts'
 
 async function utama(): Promise<void> {
   const url = process.env.DATABASE_URL
@@ -22,10 +16,8 @@ async function utama(): Promise<void> {
     process.exit(1)
   }
 
-  const email = process.env.OWNER_EMAIL?.trim().toLowerCase()
+  const email = process.env.OWNER_EMAIL?.trim()
   const kataSandi = process.env.OWNER_PASSWORD
-  const nama = process.env.OWNER_NAME?.trim() || 'Pemilik'
-  const namaPerusahaan = process.env.COMPANY_LEGAL_NAME?.trim()
 
   if (!email || !kataSandi) {
     console.error(
@@ -35,44 +27,18 @@ async function utama(): Promise<void> {
     process.exit(1)
   }
 
-  const cekSandi = skemaKataSandiBaru.safeParse(kataSandi)
-  if (!cekSandi.success) {
-    console.error(`OWNER_PASSWORD ditolak: ${cekSandi.error.issues[0]?.message}`)
-    process.exit(1)
-  }
-
-  const lokal = url.includes('localhost') || url.includes('127.0.0.1')
-  const pool = new Pool({
-    connectionString: url,
-    ssl: lokal ? undefined : { rejectUnauthorized: true },
-    max: 1,
+  const hasil = await semaiPemilik(url, {
+    email,
+    kataSandi,
+    nama: process.env.OWNER_NAME?.trim() || 'Pemilik',
+    namaPerusahaan: process.env.COMPANY_LEGAL_NAME?.trim() || undefined,
   })
-  const db = drizzle(pool, { schema, casing: 'snake_case' })
 
-  const [sudahAda] = await db.select().from(users).where(eq(users.email, email)).limit(1)
+  console.log(
+    hasil.dibuat ? `Akun pemilik dibuat: ${hasil.email}` : `Akun ${hasil.email} sudah ada — tidak diubah.`,
+  )
 
-  if (sudahAda) {
-    console.log(`Akun ${email} sudah ada — tidak diubah.`)
-  } else {
-    const hash = await bcrypt.hash(kataSandi, 12)
-    await db.insert(users).values({
-      email,
-      passwordHash: hash,
-      fullName: nama,
-      role: 'owner',
-    })
-    console.log(`Akun pemilik dibuat: ${email}`)
-  }
-
-  if (namaPerusahaan) {
-    await db
-      .update(companySettings)
-      .set({ legalName: namaPerusahaan, updatedAt: new Date() })
-      .where(eq(companySettings.id, 1))
-    console.log(`Nama perusahaan disetel: ${namaPerusahaan}`)
-  }
-
-  const [pengaturan] = await db.select().from(companySettings).where(eq(companySettings.id, 1)).limit(1)
+  const pengaturan = await bacaPengaturanPerusahaan(url)
   if (pengaturan) {
     console.log('')
     console.log('Pengaturan perusahaan saat ini:')
@@ -84,8 +50,6 @@ async function utama(): Promise<void> {
     console.log(`  Proteksi kandidat : ${pengaturan.defaultProtectionMonths} bulan`)
     console.log(`  Retensi data      : ${pengaturan.defaultRetentionMonths} bulan`)
   }
-
-  await pool.end()
 }
 
 utama().catch((galat: unknown) => {

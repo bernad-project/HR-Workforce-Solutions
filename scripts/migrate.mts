@@ -1,31 +1,14 @@
 /**
  * Menjalankan migrasi basis data.
  *
- * Migrasi 0000 adalah salinan persis `docs/schema.sql` — skema yang sudah diuji
- * di Postgres 16. Perintah ini aman diulang: migrasi yang sudah pernah jalan
- * tidak dijalankan dua kali.
- *
  *   npm run db:migrate
+ *
+ * Aman diulang: migrasi yang sudah pernah jalan tidak dijalankan dua kali.
+ * Isi sebenarnya ada di `lib-persiapan.mts`, dipakai bersama oleh perintah ini
+ * dan oleh langkah persiapan otomatis saat penempatan.
  */
-import { AKAR } from './env.mts'
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
-import { drizzle } from 'drizzle-orm/node-postgres'
-import { migrate } from 'drizzle-orm/node-postgres/migrator'
-import { Pool } from 'pg'
-
-
-function periksaSalinanSkema(): void {
-  const asli = readFileSync(resolve(AKAR, 'docs/schema.sql'), 'utf8')
-  const migrasi = readFileSync(resolve(AKAR, 'drizzle/0000_init.sql'), 'utf8')
-  if (asli !== migrasi) {
-    throw new Error(
-      'drizzle/0000_init.sql tidak lagi sama dengan docs/schema.sql.\n' +
-        'Skema yang diuji dan skema yang dijalankan harus identik. Samakan dulu, ' +
-        'baru migrasi.',
-    )
-  }
-}
+import './env.mts'
+import { jalankanMigrasi } from './lib-persiapan.mts'
 
 async function utama(): Promise<void> {
   const url = process.env.DATABASE_URL
@@ -34,21 +17,9 @@ async function utama(): Promise<void> {
     process.exit(1)
   }
 
-  periksaSalinanSkema()
-
-  const lokal = url.includes('localhost') || url.includes('127.0.0.1')
-  const pool = new Pool({
-    connectionString: url,
-    ssl: lokal ? undefined : { rejectUnauthorized: true },
-    max: 1,
-  })
-  const db = drizzle(pool)
-
   console.log('Menjalankan migrasi...')
-  await migrate(db, { migrationsFolder: resolve(AKAR, 'drizzle') })
+  await jalankanMigrasi(url)
   console.log('Migrasi selesai. Basis data siap dipakai.')
-
-  await pool.end()
 }
 
 utama().catch((galat: unknown) => {

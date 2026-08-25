@@ -9,17 +9,27 @@
  *
  * Catatan: `@vercel/postgres` sengaja TIDAK dipakai. Vercel Postgres dihentikan
  * Juni 2025 dan dimigrasikan ke Neon (CLAUDE.md "Basis data dan hosting").
+ *
+ * Sambungannya dibuat saat pertama kali dipakai, bukan saat berkas ini dimuat.
+ * Bedanya penting: pada penempatan pertama ke Vercel, basis datanya belum
+ * tersambung. Kalau sambungan dibuat saat modul dimuat, seluruh pembangunan
+ * gagal dan pemilik hanya melihat penempatan yang merah. Dengan cara ini,
+ * aplikasi tetap terpasang dan menampilkan halaman `/persiapan` yang
+ * menjelaskan apa yang masih kurang.
  */
 import { drizzle } from 'drizzle-orm/node-postgres'
 import { Pool } from 'pg'
 import * as schema from './schema'
 
+type BasisData = ReturnType<typeof drizzle<typeof schema>>
+
 function bacaUrlBasisData(): string {
   const url = process.env.DATABASE_URL
   if (!url) {
     throw new Error(
-      'DATABASE_URL belum diisi. Salin .env.example menjadi .env.local lalu isi ' +
-        'connection string Neon (yang mengandung "-pooler").',
+      'DATABASE_URL belum diisi. Di Vercel: buka tab Storage, pasang Neon Postgres, ' +
+        'lalu sambungkan ke proyek ini. Untuk pengembangan di komputer sendiri: ' +
+        'salin .env.example menjadi .env.local lalu isi.',
     )
   }
   return url
@@ -49,10 +59,26 @@ function buatPool(): Pool {
 
 // Next.js memuat ulang modul saat pengembangan. Tanpa cache ini, tiap perubahan
 // berkas akan meninggalkan pool koneksi yang menggantung.
-const global_ = globalThis as unknown as { __hhPool?: Pool }
-const pool = global_.__hhPool ?? buatPool()
-if (process.env.NODE_ENV !== 'production') global_.__hhPool = pool
+const global_ = globalThis as unknown as { __hhDb?: BasisData }
 
-export const db = drizzle(pool, { schema, casing: 'snake_case' })
-export { pool }
+function basisData(): BasisData {
+  if (!global_.__hhDb) {
+    global_.__hhDb = drizzle(buatPool(), { schema, casing: 'snake_case' })
+  }
+  return global_.__hhDb
+}
+
+/**
+ * Dipakai persis seperti objek Drizzle biasa (`db.select()`, `db.insert()`,
+ * `db.transaction()`). Pembungkus ini hanya menunda pembuatan sambungan sampai
+ * ada yang benar-benar memanggilnya.
+ */
+export const db = new Proxy({} as BasisData, {
+  get(_sasaran, nama, penerima) {
+    const asli = basisData()
+    const nilai = Reflect.get(asli as object, nama, penerima)
+    return typeof nilai === 'function' ? nilai.bind(asli) : nilai
+  },
+}) as BasisData
+
 export * as tabel from './schema'
