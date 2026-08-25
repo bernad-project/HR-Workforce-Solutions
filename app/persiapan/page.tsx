@@ -1,10 +1,17 @@
 import type { Metadata } from 'next'
 import {
+  keadaanPengaturan,
   pengaturanTambahanYangKurang,
   pengaturanYangKurang,
   PENGATURAN_TAMBAHAN,
   PENGATURAN_WAJIB,
 } from '@/lib/konfigurasi'
+
+const LABEL_KEADAAN = {
+  terisi: 'sudah terisi',
+  tidak_ada: 'belum ada',
+  kosong: 'ada, tapi nilainya kosong',
+} as const
 
 export const metadata: Metadata = { title: 'Persiapan · Modul Headhunter' }
 
@@ -48,6 +55,7 @@ export default function HalamanPersiapan() {
         <ol className="space-y-4">
           {PENGATURAN_WAJIB.map((p, i) => {
             const belum = namaKurang.has(p.nama)
+            const keadaan = keadaanPengaturan(p.nama)
             return (
               <li
                 key={p.nama}
@@ -66,11 +74,19 @@ export default function HalamanPersiapan() {
                         : 'bg-[#dcfce7] text-[var(--color-aman)]'
                     }`}
                   >
-                    {belum ? 'belum diisi' : 'sudah terisi'}
+                    {LABEL_KEADAAN[keadaan]}
                   </span>
                 </div>
                 <p className="mt-1 text-sm text-[var(--color-redup)]">{p.keterangan}</p>
-                {belum ? (
+                {keadaan === 'kosong' ? (
+                  <p className="mt-2 rounded-md bg-[#fef3c7] p-3 text-sm text-[#92400e]">
+                    Variabel <span className="angka">{p.nama}</span> sudah ada di Vercel, tapi
+                    nilainya kosong. Itu sebabnya Vercel menolak saat Anda mencoba menambahkannya
+                    lagi. Buka Settings → Environment Variables, klik ⋯ di baris{' '}
+                    <span className="angka">{p.nama}</span> → Edit, isi kolom Value-nya, lalu Save
+                    dan jalankan Redeploy.
+                  </p>
+                ) : belum ? (
                   <p className="mt-2 rounded-md bg-[var(--color-permukaan)] p-3 text-sm">
                     {p.caraMengisi}
                   </p>
@@ -99,7 +115,7 @@ export default function HalamanPersiapan() {
                         : 'bg-[#dcfce7] text-[var(--color-aman)]'
                     }`}
                   >
-                    {belum ? 'belum diisi' : 'sudah terisi'}
+                    {LABEL_KEADAAN[keadaanPengaturan(p.nama)]}
                   </span>
                 </div>
                 <p className="mt-1 text-sm text-[var(--color-redup)]">{p.keterangan}</p>

@@ -54,12 +54,29 @@ export const PENGATURAN_TAMBAHAN: PengaturanWajib[] = [
   },
 ]
 
-function kosong(nama: string): boolean {
+/**
+ * Kenapa sebuah pengaturan dianggap belum siap.
+ *
+ * Bedanya penting dan pernah memakan waktu: Vercel bisa menolak penambahan
+ * variabel dengan alasan "sudah ada", sementara aplikasi tetap melaporkannya
+ * belum diisi. Keduanya benar bila variabelnya memang ada tapi nilainya kosong.
+ * Tanpa membedakan dua keadaan ini, pemiliknya hanya bisa menebak.
+ */
+export type KeadaanPengaturan = 'terisi' | 'tidak_ada' | 'kosong'
+
+export function keadaanPengaturan(nama: string): KeadaanPengaturan {
   // Alamat basis data bisa datang dengan beberapa nama, tergantung versi
   // integrasi Neon di Vercel. Lihat lib/db/url.ts.
-  if (nama === 'DATABASE_URL') return urlBasisData() === null
+  if (nama === 'DATABASE_URL') return urlBasisData() === null ? 'tidak_ada' : 'terisi'
+
   const nilai = process.env[nama]
-  return nilai === undefined || nilai.trim() === ''
+  if (nilai === undefined) return 'tidak_ada'
+  if (nilai.trim() === '') return 'kosong'
+  return 'terisi'
+}
+
+function kosong(nama: string): boolean {
+  return keadaanPengaturan(nama) !== 'terisi'
 }
 
 /** Daftar pengaturan wajib yang belum diisi. Kosong berarti aplikasi siap jalan. */
