@@ -1,0 +1,118 @@
+# Modul Headhunter — PT HR & Workforce Solutions
+
+Sistem manajemen rekrutmen. Kebenaran produk ada di [`SPEC.md`](SPEC.md); aturan
+kerja untuk sesi Claude Code ada di [`CLAUDE.md`](CLAUDE.md).
+
+**Status: Fase 0 (Fondasi) selesai.** Berikutnya Fase 1 (Data induk).
+
+---
+
+## Apa yang sudah bisa dipakai
+
+| Bisa | Belum |
+|---|---|
+| Masuk dengan email + kata sandi | Menambah klien, lowongan, kandidat |
+| Peran `owner` dan `recruiter` beserta pembatasannya | Pengajuan dan papan tahapan |
+| Basis data lengkap 18 tabel sesuai `docs/schema.sql` | Penempatan, fee, tagihan |
+| Dasbor kosong yang membaca angka langsung dari basis data | Portal klien, fitur AI |
+
+Menu Klien, Lowongan, Kandidat, dan Pipeline sudah terlihat di bagian atas layar
+tapi belum bisa diklik — itu memang belum dibangun.
+
+---
+
+## Menjalankan di komputer sendiri
+
+Perlu Node.js 22 ke atas dan satu basis data Postgres.
+
+```bash
+npm install                       # sekali saja
+cp .env.example .env.local        # lalu isi nilainya, lihat penjelasan di dalamnya
+npm run db:migrate                # membuat seluruh tabel
+npm run db:seed                   # membuat akun pemilik pertama
+npm run dev                       # buka http://localhost:3000
+```
+
+Masuk dengan email dan kata sandi yang Anda tulis di `OWNER_EMAIL` dan
+`OWNER_PASSWORD`.
+
+---
+
+## Perintah yang tersedia
+
+| Perintah | Gunanya |
+|---|---|
+| `npm run dev` | Menjalankan aplikasi untuk dicoba di komputer sendiri |
+| `npm run db:migrate` | Membuat atau memperbarui tabel. Aman diulang. |
+| `npm run db:seed` | Membuat akun pemilik. Tidak menimpa akun yang sudah ada. |
+| `npm run db:test-rules` | Menjalankan 10 uji aturan bisnis. **Jalankan setiap kali skema disentuh.** |
+| `npm run test` | Menjalankan uji perhitungan |
+| `npm run typecheck` | Memeriksa kesalahan ketik di seluruh kode |
+| `npm run build` | Menyiapkan versi produksi |
+
+Menambah akun perekrut saat nanti merekrut orang:
+
+```bash
+KATA_SANDI='kata sandi minimal 12 huruf' \
+  npm run user:tambah -- --email=budi@perusahaan.co.id --nama="Budi" --peran=recruiter
+```
+
+---
+
+## Menaruhnya di internet (Vercel)
+
+1. Di Vercel, buat proyek baru dari repositori ini.
+2. Di **Marketplace**, tambahkan **Neon Postgres**. Vercel akan mengisi
+   `DATABASE_URL` sendiri. Pastikan yang dipakai adalah alamat ber-`-pooler`.
+3. Isi variabel lingkungan lain sesuai `.env.example`: `AUTH_SECRET`,
+   `OWNER_EMAIL`, `OWNER_PASSWORD`, `OWNER_NAME`, `COMPANY_LEGAL_NAME`.
+4. Setelah penempatan pertama berhasil, jalankan sekali dari komputer Anda
+   dengan `DATABASE_URL` produksi:
+
+   ```bash
+   npm run db:migrate
+   npm run db:seed
+   ```
+
+Migrasi **tidak** dijalankan otomatis saat penempatan. Itu disengaja: perubahan
+basis data produksi sebaiknya terjadi karena Anda memutuskan, bukan karena
+kebetulan ada penempatan baru.
+
+---
+
+## Susunan berkas
+
+```
+app/                 halaman dan server action
+  masuk/             halaman masuk
+  (internal)/        halaman untuk staf, sudah dipagari pemeriksaan sesi
+components/ui/       elemen antarmuka dasar
+lib/
+  db/schema.ts       cerminan TypeScript dari docs/schema.sql
+  db/queries/        query Drizzle, dikelompokkan per entitas
+  validation/        skema Zod, satu berkas per entitas
+  auth.ts            pemeriksaan email + kata sandi
+  auth.config.ts     aturan "siapa boleh buka halaman mana"
+  format.ts          tampilan rupiah dan waktu Asia/Jakarta
+drizzle/0000_init.sql  salinan persis docs/schema.sql
+docs/
+  schema.sql         skema basis data — sumber kebenaran
+  test_rules.sql     10 uji aturan bisnis
+  CATATAN-TEMUAN.md  hal yang perlu keputusan pemilik
+scripts/             perintah baris perintah
+proxy.ts             pemeriksaan sesi sebelum tiap halaman
+```
+
+---
+
+## Hal yang sengaja dijaga
+
+- **Uang tidak pernah lewat `number` JavaScript.** Semua nilai rupiah bertipe
+  `bigint`, dan perhitungan yang menghasilkan nilai tersimpan dilakukan Postgres.
+- **`drizzle/0000_init.sql` wajib sama persis dengan `docs/schema.sql`.** Perintah
+  migrasi menolak jalan bila keduanya berbeda, supaya skema yang diuji dan skema
+  yang dijalankan tidak pernah menyimpang.
+- **Tanggal bisnis tidak pernah lewat `new Date()`.** Kolom `DATE` dibaca sebagai
+  teks `YYYY-MM-DD` supaya tanggal tidak bergeser sehari karena zona waktu.
+- **Perekrut tidak melihat menu Penempatan dan Tagihan.** Dipagari di lapisan
+  tata letak, bukan sekadar disembunyikan dengan CSS.

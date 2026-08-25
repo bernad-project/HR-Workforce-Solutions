@@ -1,0 +1,34 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-dasar: #ffffff;
+  --color-permukaan: #f7f8fa;
+  --color-garis: #e3e6ec;
+  --color-tinta: #12141a;
+  --color-redup: #6b7280;
+  --color-utama: #1e40af;
+  --color-utama-redup: #eef2ff;
+  --color-bahaya: #b91c1c;
+  --color-bahaya-redup: #fef2f2;
+  --color-aman: #15803d;
+
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background-color: var(--color-permukaan);
+  color: var(--color-tinta);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Angka rupiah dan tanggal lebih mudah dibandingkan bila lebarnya seragam. */
+.angka {
+  font-variant-numeric: tabular-nums;
+}

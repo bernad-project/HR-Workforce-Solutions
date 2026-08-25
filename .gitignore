@@ -1,0 +1,18 @@
+node_modules/
+.next/
+out/
+build/
+dist/
+
+# Rahasia — jangan pernah masuk repo (CLAUDE.md "Basis data dan hosting")
+.env
+.env.local
+.env.*.local
+
+.DS_Store
+*.pem
+npm-debug.log*
+.vercel
+*.tsbuildinfo
+next-env.d.ts
+coverage/
