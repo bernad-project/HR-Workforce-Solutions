@@ -20,32 +20,12 @@
 import { drizzle } from 'drizzle-orm/node-postgres'
 import { Pool } from 'pg'
 import * as schema from './schema'
+import { butuhSsl, urlBasisDataWajib } from './url'
 
 type BasisData = ReturnType<typeof drizzle<typeof schema>>
 
-function bacaUrlBasisData(): string {
-  const url = process.env.DATABASE_URL
-  if (!url) {
-    throw new Error(
-      'DATABASE_URL belum diisi. Di Vercel: buka tab Storage, pasang Neon Postgres, ' +
-        'lalu sambungkan ke proyek ini. Untuk pengembangan di komputer sendiri: ' +
-        'salin .env.example menjadi .env.local lalu isi.',
-    )
-  }
-  return url
-}
-
-function butuhSsl(url: string): boolean {
-  try {
-    const host = new URL(url).hostname
-    return host !== 'localhost' && host !== '127.0.0.1'
-  } catch {
-    return true
-  }
-}
-
 function buatPool(): Pool {
-  const url = bacaUrlBasisData()
+  const url = urlBasisDataWajib()
   return new Pool({
     connectionString: url,
     ssl: butuhSsl(url) ? { rejectUnauthorized: true } : undefined,

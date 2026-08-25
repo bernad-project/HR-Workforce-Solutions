@@ -7,12 +7,13 @@
  * tidak membuat akun kedua dan tidak menimpa kata sandi yang berlaku.
  */
 import './env.mts'
+import { urlBasisData } from '../lib/db/url'
 import { bacaPengaturanPerusahaan, semaiPemilik } from './lib-persiapan.mts'
 
 async function utama(): Promise<void> {
-  const url = process.env.DATABASE_URL
+  const url = urlBasisData()
   if (!url) {
-    console.error('DATABASE_URL belum diisi.')
+    console.error('Alamat basis data belum ada. Isi DATABASE_URL di .env.local.')
     process.exit(1)
   }
 

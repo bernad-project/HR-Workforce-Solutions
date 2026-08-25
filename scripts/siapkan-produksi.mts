@@ -14,6 +14,7 @@
  * halaman `/persiapan` yang menjelaskan apa yang masih kurang.
  */
 import './env.mts'
+import { urlBasisData } from '../lib/db/url'
 import { bacaPengaturanPerusahaan, jalankanMigrasi, semaiPemilik } from './lib-persiapan.mts'
 
 function garis(pesan: string): void {
@@ -21,10 +22,10 @@ function garis(pesan: string): void {
 }
 
 async function utama(): Promise<void> {
-  const url = process.env.DATABASE_URL?.trim()
+  const url = urlBasisData()
 
   if (!url) {
-    garis('DATABASE_URL belum diisi — migrasi dilewati.')
+    garis('Alamat basis data belum ada — migrasi dilewati.')
     garis('Aplikasi tetap ditempatkan dan akan menampilkan halaman persiapan.')
     return
   }

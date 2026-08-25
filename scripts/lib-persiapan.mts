@@ -16,16 +16,13 @@ import bcrypt from 'bcryptjs'
 import * as schema from '../lib/db/schema'
 import { companySettings, users } from '../lib/db/schema'
 import { skemaKataSandiBaru } from '../lib/validation/auth'
+import { butuhSsl } from '../lib/db/url'
 import { AKAR } from './env.mts'
-
-function lokal(url: string): boolean {
-  return url.includes('localhost') || url.includes('127.0.0.1')
-}
 
 export function buatPool(url: string): Pool {
   return new Pool({
     connectionString: url,
-    ssl: lokal(url) ? undefined : { rejectUnauthorized: true },
+    ssl: butuhSsl(url) ? { rejectUnauthorized: true } : undefined,
     max: 1,
   })
 }

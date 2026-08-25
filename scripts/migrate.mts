@@ -8,12 +8,13 @@
  * dan oleh langkah persiapan otomatis saat penempatan.
  */
 import './env.mts'
+import { urlBasisData } from '../lib/db/url'
 import { jalankanMigrasi } from './lib-persiapan.mts'
 
 async function utama(): Promise<void> {
-  const url = process.env.DATABASE_URL
+  const url = urlBasisData()
   if (!url) {
-    console.error('DATABASE_URL belum diisi. Salin .env.example menjadi .env.local lalu isi.')
+    console.error('Alamat basis data belum ada. Salin .env.example menjadi .env.local lalu isi DATABASE_URL.')
     process.exit(1)
   }
 

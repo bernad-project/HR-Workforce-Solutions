@@ -10,6 +10,8 @@
  * `proxy.ts`, yang berjalan sebelum keduanya siap.
  */
 
+import { urlBasisData } from './db/url'
+
 export type PengaturanWajib = {
   nama: string
   judul: string
@@ -53,6 +55,9 @@ export const PENGATURAN_TAMBAHAN: PengaturanWajib[] = [
 ]
 
 function kosong(nama: string): boolean {
+  // Alamat basis data bisa datang dengan beberapa nama, tergantung versi
+  // integrasi Neon di Vercel. Lihat lib/db/url.ts.
+  if (nama === 'DATABASE_URL') return urlBasisData() === null
   const nilai = process.env[nama]
   return nilai === undefined || nilai.trim() === ''
 }
