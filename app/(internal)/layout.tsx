@@ -15,9 +15,9 @@ type Menu = { label: string; href: string; siap: boolean; hanyaOwner?: boolean }
 
 const MENU: Menu[] = [
   { label: 'Dasbor', href: '/dasbor', siap: true },
-  { label: 'Klien', href: '/klien', siap: false },
-  { label: 'Lowongan', href: '/lowongan', siap: false },
-  { label: 'Kandidat', href: '/kandidat', siap: false },
+  { label: 'Klien', href: '/klien', siap: true },
+  { label: 'Lowongan', href: '/lowongan', siap: true },
+  { label: 'Kandidat', href: '/kandidat', siap: true },
   { label: 'Pipeline', href: '/pipeline', siap: false },
   { label: 'Penempatan', href: '/penempatan', siap: false, hanyaOwner: true },
   { label: 'Tagihan', href: '/tagihan', siap: false, hanyaOwner: true },

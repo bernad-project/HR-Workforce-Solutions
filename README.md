@@ -3,7 +3,7 @@
 Sistem manajemen rekrutmen. Kebenaran produk ada di [`SPEC.md`](SPEC.md); aturan
 kerja untuk sesi Claude Code ada di [`CLAUDE.md`](CLAUDE.md).
 
-**Status: Fase 0 (Fondasi) selesai.** Berikutnya Fase 1 (Data induk).
+**Status: Fase 1 (Data induk) selesai.** Berikutnya Fase 2 (Pipeline).
 
 ---
 
@@ -11,13 +11,34 @@ kerja untuk sesi Claude Code ada di [`CLAUDE.md`](CLAUDE.md).
 
 | Bisa | Belum |
 |---|---|
-| Masuk dengan email + kata sandi | Menambah klien, lowongan, kandidat |
-| Peran `owner` dan `recruiter` beserta pembatasannya | Pengajuan dan papan tahapan |
-| Basis data lengkap 18 tabel sesuai `docs/schema.sql` | Penempatan, fee, tagihan |
-| Dasbor kosong yang membaca angka langsung dari basis data | Portal klien, fitur AI |
+| Masuk dengan email + kata sandi | Mengaitkan kandidat ke lowongan |
+| Peran `owner` dan `recruiter` beserta pembatasannya | Papan tahapan dan jejak perpindahannya |
+| Klien, perjanjian jasa rekrutmen, lowongan, kandidat | Penempatan, fee, tagihan |
+| Pencarian dan penyaringan kandidat | Portal klien, fitur AI |
+| Catatan persetujuan data pribadi di setiap kandidat | Layar pengelolaan hak subjek data |
+| Unggah CV ke Vercel Blob | |
 
-Menu Klien, Lowongan, Kandidat, dan Pipeline sudah terlihat di bagian atas layar
-tapi belum bisa diklik — itu memang belum dibangun.
+Menu Pipeline, Penempatan, dan Tagihan sudah terlihat di bagian atas layar tapi
+belum bisa diklik — itu memang belum dibangun.
+
+### Cara mencobanya
+
+1. Buka **Klien → Tambah klien**, isi nama perusahaan dan PIC-nya.
+2. Di halaman klien itu, klik **Tambah perjanjian**. Isi persentase fee — coba
+   isi `5` dulu untuk melihat sistem menolaknya, lalu isi `15`.
+3. Klik **Tambah lowongan**. Ubah statusnya ke **Terbuka** tanpa mengisi *"apa yang
+   membuat kandidat sebelumnya tidak cocok"* — sistem akan menahan Anda. Isi
+   jawabannya, lalu simpan.
+4. Buka **Kandidat → Tambah kandidat**. Baca dulu kotak biru di atas: itu yang
+   wajib disampaikan ke kandidat sebelum datanya dimasukkan.
+5. Setelah tersimpan, coba tambah kandidat lain dengan nomor telepon yang sama
+   tapi ditulis `+62…`. Sistem akan mengenalinya sebagai orang yang sama.
+6. Coba juga nama yang mirip dengan kandidat yang sudah ada — sistem hanya
+   memperingatkan, dan Anda yang memutuskan.
+
+Untuk melihat pembatasan peran: buat akun perekrut (lihat perintah `user:tambah`
+di bawah), masuk dengan akun itu, lalu buka halaman klien. Bagian perjanjian dan
+menu Tagihan tidak akan ada di sana.
 
 ---
 
@@ -95,10 +116,15 @@ lib/
   auth.config.ts     aturan "siapa boleh buka halaman mana"
   format.ts          tampilan rupiah dan waktu Asia/Jakarta
 drizzle/0000_init.sql  salinan persis docs/schema.sql
+  rules/             aturan bisnis murni: uang, tanggal, deteksi kembar
+  pdp.ts             teks pemberitahuan persetujuan, dengan nomor versi
+  audit.ts           pencatatan akses data pribadi
+  storage.ts         unggah/unduh dokumen ke Vercel Blob
 docs/
-  schema.sql         skema basis data — sumber kebenaran
-  test_rules.sql     10 uji aturan bisnis
-  CATATAN-TEMUAN.md  hal yang perlu keputusan pemilik
+  schema.sql                  skema basis data — sumber kebenaran
+  test_rules.sql              10 uji aturan bisnis
+  CATATAN-TEMUAN.md           hal yang perlu keputusan pemilik
+  FORMULIR-KEBUTUHAN-KLIEN.md bagian formulir yang belum ada rujukannya
 scripts/             perintah baris perintah
 proxy.ts             pemeriksaan sesi sebelum tiap halaman
 ```

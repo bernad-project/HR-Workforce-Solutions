@@ -11,8 +11,8 @@ export const dynamic = 'force-dynamic'
 
 const FASE = [
   { no: 0, nama: 'Fondasi', isi: 'Masuk, migrasi, akun pemilik', keadaan: 'selesai' },
-  { no: 1, nama: 'Data induk', isi: 'Klien, perjanjian, lowongan, kandidat, unggah CV', keadaan: 'berikutnya' },
-  { no: 2, nama: 'Pipeline', isi: 'Pengajuan, papan tahapan, jejak audit', keadaan: 'menunggu' },
+  { no: 1, nama: 'Data induk', isi: 'Klien, perjanjian, lowongan, kandidat, unggah CV', keadaan: 'selesai' },
+  { no: 2, nama: 'Pipeline', isi: 'Pengajuan, papan tahapan, jejak audit', keadaan: 'berikutnya' },
   { no: 3, nama: 'Uang', isi: 'Penempatan, fee, dua tagihan, garansi', keadaan: 'menunggu' },
   { no: 4, nama: 'AI', isi: 'Ekstraksi CV, skor kecocokan', keadaan: 'menunggu' },
   { no: 5, nama: 'Portal klien', isi: 'Magic link, tampilan terbatas', keadaan: 'menunggu' },
