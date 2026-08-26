@@ -14,6 +14,8 @@ import { formatRupiah, formatTanggal, formatWaktu } from '@/lib/format'
 import { teleponKeWa } from '@/lib/rules/duplikat'
 import { SALURAN_PERSETUJUAN } from '@/lib/pdp'
 import { STATUS_KANDIDAT as PILIHAN_STATUS } from '@/lib/validation/kandidat'
+import { daftarPengajuanKandidat } from '@/lib/db/queries/pengajuan'
+import { BadgeTahap } from '@/components/tahap'
 import { UnggahCv } from './unggah-cv'
 
 export const dynamic = 'force-dynamic'
@@ -50,7 +52,11 @@ export default async function HalamanDetailKandidat({
   const kandidat = await ambilKandidat(id)
   if (!kandidat) notFound()
 
-  const [dokumen, persetujuan] = await Promise.all([daftarDokumen(id), daftarPersetujuan(id)])
+  const [dokumen, persetujuan, pengajuan] = await Promise.all([
+    daftarDokumen(id),
+    daftarPersetujuan(id),
+    daftarPengajuanKandidat(id),
+  ])
   const persetujuanBerlaku = persetujuan.find((p) => p.withdrawnAt === null)
 
   return (
@@ -163,6 +169,46 @@ export default async function HalamanDetailKandidat({
             </CardContent>
           </Card>
 
+          {/*
+            Di mana kandidat ini sedang berada. Sengaja menyebut nama klien:
+            perekrut perlu tahu ia sudah diajukan ke siapa sebelum menawarkannya
+            ke klien lain, karena masa proteksi 12 bulan mengikat per klien.
+          */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Pengajuan ke lowongan</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {pengajuan.length === 0 ? (
+                <p className="text-sm text-[var(--color-redup)]">
+                  Belum dikaitkan ke lowongan mana pun. Kaitkan dari halaman lowongannya.
+                </p>
+              ) : (
+                <ul className="divide-y divide-[var(--color-garis)]">
+                  {pengajuan.map((p) => (
+                    <li key={p.id} className="flex flex-wrap items-start justify-between gap-2 py-3 first:pt-0 last:pb-0">
+                      <div className="min-w-0">
+                        <Link
+                          href={`/pengajuan/${p.id}`}
+                          className="text-sm font-medium text-[var(--color-utama)] hover:underline"
+                        >
+                          {p.jobTitle}
+                        </Link>
+                        <p className="text-xs text-[var(--color-redup)]">
+                          {p.clientName}
+                          {p.submittedAt
+                            ? ` · diajukan ${formatWaktu(p.submittedAt)}`
+                            : ' · belum diajukan ke klien'}
+                        </p>
+                      </div>
+                      <BadgeTahap tahap={p.stage} />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle>Dokumen</CardTitle>
@@ -259,10 +305,6 @@ export default async function HalamanDetailKandidat({
                 </BarisRincian>
                 <BarisRincian label="Dibuat">{formatWaktu(kandidat.createdAt)}</BarisRincian>
               </Rincian>
-              <p className="mt-3 text-xs text-[var(--color-redup)]">
-                Pengajuan kandidat ini ke lowongan, beserta riwayat tahapannya, muncul di sini
-                setelah Fase 2 selesai.
-              </p>
             </CardContent>
           </Card>
         </div>

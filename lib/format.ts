@@ -84,3 +84,19 @@ export function tanggalHariIniJakarta(): string {
   }).format(new Date())
   return bagian
 }
+
+/**
+ * Waktu tersimpan (TIMESTAMPTZ) → tanggal kalender Jakarta `YYYY-MM-DD`.
+ *
+ * Dipakai saat sebuah stempel waktu harus dibandingkan dengan tanggal bisnis —
+ * misalnya menghitung sisa masa proteksi kandidat. Yang menentukan adalah
+ * tanggal menurut kalender di Jakarta, bukan tanggal menurut jam server.
+ */
+export function tanggalJakarta(waktu: Date): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: ZONA_WAKTU,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(waktu)
+}

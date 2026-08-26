@@ -9,7 +9,7 @@ import { Select } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Field, PesanGalat } from '@/components/ui/field'
 import { KEADAAN_AWAL } from '@/lib/validation/umum'
-import { JENIS_HUBUNGAN_KERJA, STATUS_LOWONGAN } from '@/lib/validation/lowongan'
+import { JENIS_HUBUNGAN_KERJA, POLA_KERJA, STATUS_LOWONGAN } from '@/lib/validation/lowongan'
 import type { Job } from '@/lib/db/schema'
 import { simpanLowongan } from './aksi'
 
@@ -146,6 +146,44 @@ export function FormLowongan({
             />
           </Field>
 
+          <Field htmlFor="department" label="Departemen / divisi" galat={g.department}>
+            <Input
+              id="department"
+              name="department"
+              defaultValue={nilai('department', lowongan?.department ?? '')}
+              placeholder="Penjualan"
+            />
+          </Field>
+
+          <Field
+            htmlFor="reportsTo"
+            label="Atasan langsung"
+            bantuan="Jabatannya, bukan namanya — nama orang berganti, jabatannya tidak."
+            galat={g.reportsTo}
+          >
+            <Input
+              id="reportsTo"
+              name="reportsTo"
+              defaultValue={nilai('reportsTo', lowongan?.reportsTo ?? '')}
+              placeholder="Direktur Penjualan"
+            />
+          </Field>
+
+          <Field htmlFor="workArrangement" label="Pola kerja" galat={g.workArrangement}>
+            <Select
+              id="workArrangement"
+              name="workArrangement"
+              defaultValue={nilai('workArrangement', lowongan?.workArrangement ?? '')}
+            >
+              <option value="">Belum ditentukan</option>
+              {POLA_KERJA.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </Select>
+          </Field>
+
           <Field htmlFor="employmentType" label="Status hubungan kerja" galat={g.employmentType}>
             <Select
               id="employmentType"
@@ -263,6 +301,41 @@ export function FormLowongan({
       </section>
 
       <section className="rounded-lg border border-[var(--color-garis)] bg-white p-5">
+        <h2 className="mb-4 text-sm font-semibold text-[var(--color-redup)]">Isi pekerjaan</h2>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field
+            htmlFor="mainDuties"
+            label="Tugas utama sehari-hari"
+            bantuan="Satu baris satu tugas. Ini yang dibacakan ke kandidat saat menawarkan posisinya."
+            galat={g.mainDuties}
+          >
+            <Textarea
+              id="mainDuties"
+              name="mainDuties"
+              rows={5}
+              defaultValue={nilai('mainDuties', (lowongan?.mainDuties ?? []).join('\n'))}
+              placeholder={'Mencari dan menutup penjualan ke pelanggan korporat\nMenyusun laporan penjualan bulanan'}
+            />
+          </Field>
+
+          <Field
+            htmlFor="benefits"
+            label="Tunjangan di luar gaji pokok"
+            bantuan="Satu baris satu tunjangan. Sering menjadi penentu kandidat mau pindah atau tidak."
+            galat={g.benefits}
+          >
+            <Textarea
+              id="benefits"
+              name="benefits"
+              rows={5}
+              defaultValue={nilai('benefits', (lowongan?.benefits ?? []).join('\n'))}
+              placeholder={'Tunjangan transportasi Rp1.000.000\nBPJS Kesehatan dan Ketenagakerjaan\nBonus tahunan 1x gaji'}
+            />
+          </Field>
+        </div>
+      </section>
+
+      <section className="rounded-lg border border-[var(--color-garis)] bg-white p-5">
         <h2 className="mb-4 text-sm font-semibold text-[var(--color-redup)]">Kriteria</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field
@@ -320,6 +393,25 @@ export function FormLowongan({
               id="interviewer"
               name="interviewer"
               defaultValue={nilai('interviewer', lowongan?.interviewer ?? '')}
+            />
+          </Field>
+
+          <Field
+            htmlFor="clientInterviewStages"
+            label="Tahapan wawancara di sisi klien"
+            bantuan="Satu baris satu tahap, berurutan. Dipakai untuk memberi tahu kandidat berapa kali ia akan dipanggil."
+            galat={g.clientInterviewStages}
+            className="sm:col-span-2"
+          >
+            <Textarea
+              id="clientInterviewStages"
+              name="clientInterviewStages"
+              rows={3}
+              defaultValue={nilai(
+                'clientInterviewStages',
+                (lowongan?.clientInterviewStages ?? []).join('\n'),
+              )}
+              placeholder={'Wawancara HR\nWawancara user\nWawancara direktur dan penawaran'}
             />
           </Field>
 

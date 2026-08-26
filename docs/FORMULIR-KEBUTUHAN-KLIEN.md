@@ -5,9 +5,11 @@ Pencatatan Kebutuhan Klien dari Paket Dokumen Tahap 1 tanpa field yang hilang."*
 Dokumen itu belum ada, jadi formulirnya saya susun dari `docs/schema.sql`, `SPEC.md`
 §4, dan §6.3.
 
-**Semua kotak isian di layar berasal dari kolom yang memang sudah ada di skema.**
-Tidak ada kolom baru, tidak ada kolom yang saya lewati. Yang saya karang sendiri
-adalah hal-hal di bawah ini — silakan dicoret atau diubah.
+Saat Fase 1 ditulis, **semua kotak isian di layar berasal dari kolom yang memang
+sudah ada di skema** — tidak ada kolom baru, tidak ada kolom yang dilewati. Pada 26
+Agustus 2026 enam kolom ditambahkan atas persetujuan Anda; rinciannya di bagian 8.
+
+Yang saya karang sendiri adalah hal-hal di bawah ini — silakan dicoret atau diubah.
 
 ---
 
@@ -19,8 +21,9 @@ Skema tidak menentukan urutan. Saya kelompokkan lowongan jadi empat bagian:
 |---|---|---|
 | Kebutuhan | Klien, jabatan, jumlah, lokasi, gaji, target mulai, status | Yang biasanya ditanyakan pertama saat klien menelepon |
 | **Kenapa kandidat sebelumnya tidak cocok** | `reason_previous_failed`, "sudah kosong berapa lama" | Diberi kotak sendiri dan garis tebal. SPEC §6.3 menyebutnya field paling bernilai, tapi kalau diselipkan di tengah isian lain ia akan dilewati |
+| Isi pekerjaan | Tugas utama, tunjangan di luar gaji pokok | Dua hal yang paling sering ditanyakan kandidat sebelum bersedia diajukan |
 | Kriteria | Syarat wajib, nilai tambah | Dua kolom bersebelahan supaya mudah dibandingkan |
-| Proses di sisi klien | Pengambil keputusan, pewawancara, pertanyaan penyaringan | Biasanya baru terjawab di pertemuan kedua |
+| Proses di sisi klien | Pengambil keputusan, pewawancara, tahapan wawancara, pertanyaan penyaringan | Biasanya baru terjawab di pertemuan kedua |
 
 **Bila formulir asli Anda punya urutan berbeda, sebutkan — memindahkannya mudah.**
 
@@ -85,6 +88,27 @@ Akibat sampingannya: perekrut tidak bisa memilih perjanjian mana yang dipakai se
 lowongan. Sistem memilihkan perjanjian yang sedang berlaku. **Kalau Anda ingin
 perekrut bisa memilih, itu berarti mereka melihat daftar perjanjian — dan itu perlu
 persetujuan Anda karena bertentangan dengan CLAUDE.md poin 8.**
+
+## 8. Enam isian tambahan di formulir lowongan (26 Agustus 2026)
+
+Skema versi 1.0 tidak punya kolomnya, jadi ini penambahan pertama pada skema sejak
+kode ditulis. Disetujui pemilik. Semuanya boleh dikosongkan — tidak ada lowongan lama
+yang jadi tidak sah.
+
+| Isian | Kenapa ada |
+|---|---|
+| Tugas utama sehari-hari | Yang dibacakan ke kandidat saat menawarkan posisi. Deskripsi jabatan tertulis sering terlalu umum untuk itu. |
+| Departemen / divisi | Membedakan dua lowongan berjudul sama di perusahaan yang sama |
+| Atasan langsung | Ditulis sebagai jabatan, bukan nama — orangnya berganti, jabatannya tidak |
+| Pola kerja (WFO/WFH/hybrid) | Sejak 2021 ini termasuk tiga pertanyaan pertama kandidat |
+| Tunjangan di luar gaji pokok | Sering jadi penentu kandidat mau pindah, padahal gaji pokoknya mirip |
+| Tahapan wawancara di sisi klien | Supaya kandidat tahu akan dipanggil berapa kali sebelum ia setuju diajukan |
+
+**Dua isian yang biasa ada di formulir kebutuhan tapi sengaja TIDAK disediakan:
+preferensi jenis kelamin dan batas usia.** Keduanya diskriminatif, dan menyediakan
+kotaknya sama saja dengan mengundang pemakaiannya. Bila klien menyebutkannya lewat
+telepon, tempatnya di catatan bebas — bukan di kolom tersendiri yang bisa dipakai
+menyaring.
 
 ---
 

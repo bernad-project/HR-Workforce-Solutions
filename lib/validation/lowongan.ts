@@ -20,6 +20,14 @@ export const STATUS_LOWONGAN = [
 
 export const JENIS_HUBUNGAN_KERJA = ['Karyawan tetap', 'PKWT / kontrak', 'Harian lepas', 'Magang'] as const
 
+/** Pola kerja. Ditulis dalam kata yang dipakai klien, bukan singkatan saja. */
+export const POLA_KERJA = [
+  'Penuh di kantor (WFO)',
+  'Penuh dari rumah (WFH)',
+  'Campuran (hybrid)',
+  'Kerja di lapangan',
+] as const
+
 export const skemaLowongan = z
   .object({
     clientId: z.string({ error: 'Klien wajib dipilih' }).uuid('Klien wajib dipilih'),
@@ -55,6 +63,13 @@ export const skemaLowongan = z
     targetStartDate: tanggalOpsional,
     screeningQuestions: daftarBaris,
     status: z.enum(['draft', 'open', 'on_hold', 'filled', 'cancelled', 'lost']).default('draft'),
+    // Enam isian formulir kebutuhan klien yang ditambahkan 26 Agustus 2026.
+    mainDuties: daftarBaris,
+    department: teksOpsional,
+    reportsTo: teksOpsional,
+    workArrangement: teksOpsional,
+    benefits: daftarBaris,
+    clientInterviewStages: daftarBaris,
   })
   .refine((d) => d.salaryMin === null || d.salaryMax === null || d.salaryMax >= d.salaryMin, {
     message: 'Gaji maksimal tidak boleh lebih kecil dari gaji minimal',

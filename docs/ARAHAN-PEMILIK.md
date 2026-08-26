@@ -168,4 +168,4 @@ Dikerjakan di Fase 5.
 | 2a. Kandidat mengisi sendiri | Diterima. Bersama Fase 5. |
 | 2b. Menarik dari LinkedIn | **Dibatalkan pemilik.** Diganti tempel-teks + AI. |
 | 3. Klien melihat talent pool | **Diubah.** Kartu buta tanpa identitas, Fase 5. |
-| Enam kolom formulir normatif | Diterima. Dikerjakan bersama Fase 2. |
+| Enam kolom formulir normatif | **Selesai** bersama Fase 2, 26 Agu 2026. |

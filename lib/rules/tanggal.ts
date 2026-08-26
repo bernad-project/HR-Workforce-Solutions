@@ -83,3 +83,34 @@ export function tambahHari(tanggal: string, hari: number): string {
 export function hitungRetentionUntil(tanggalAktivitasTerakhir: string, bulanRetensi: number): string {
   return tambahBulan(tanggalAktivitasTerakhir, bulanRetensi)
 }
+
+/**
+ * Nomor hari berurutan sejak 1 Maret tahun 0 — dipakai hanya untuk menghitung
+ * SELISIH antara dua tanggal, tidak pernah ditampilkan.
+ *
+ * Alasan memakai ini alih-alih `new Date(a) - new Date(b)`: pengurangan dua
+ * objek `Date` bekerja dalam milidetik dan ikut membawa jam serta zona waktu,
+ * jadi jawabannya bisa meleset satu hari tergantung di mana kodenya berjalan.
+ * Perhitungan di bawah murni bilangan bulat dan selalu memberi jawaban yang sama.
+ *
+ * Algoritmanya "days from civil" — sama seperti yang dipakai Postgres untuk
+ * pengurangan tipe DATE.
+ */
+export function nomorHari(tanggal: string): number {
+  const { tahun, bulan, hari } = uraiTanggal(tanggal)
+  const t = bulan <= 2 ? tahun - 1 : tahun
+  const era = Math.floor(t / 400)
+  const tahunDalamEra = t - era * 400
+  const hariDalamTahun = Math.floor((153 * (bulan + (bulan > 2 ? -3 : 9)) + 2) / 5) + hari - 1
+  const hariDalamEra =
+    tahunDalamEra * 365 +
+    Math.floor(tahunDalamEra / 4) -
+    Math.floor(tahunDalamEra / 100) +
+    hariDalamTahun
+  return era * 146097 + hariDalamEra - 719468
+}
+
+/** Berapa hari dari `dari` sampai `ke`. Negatif bila `ke` lebih awal. */
+export function selisihHari(dari: string, ke: string): number {
+  return nomorHari(ke) - nomorHari(dari)
+}

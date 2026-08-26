@@ -162,6 +162,25 @@ CREATE TABLE jobs (
   updated_at             TIMESTAMPTZ NOT NULL DEFAULT now(),
   deleted_at             TIMESTAMPTZ,
 
+  -- Enam isian yang normatif di formulir kebutuhan klien tapi belum ada di
+  -- versi 1.0. Ditambahkan 26 Agustus 2026 atas persetujuan pemilik.
+  --
+  -- Sengaja ditaruh di URUTAN PALING AKHIR, bukan disisipkan di tengah tabel
+  -- meski secara isi lebih cocok di atas. Alasannya: basis data yang sudah jalan
+  -- hanya bisa menambah kolom di belakang. Kalau urutan di berkas ini berbeda
+  -- dari urutan hasil migrasi, `npm run db:periksa-skema` akan melaporkannya
+  -- berbeda — dan pemeriksaan itu justru yang menjaga keduanya tidak menyimpang.
+  --
+  -- Yang sengaja TIDAK ditambahkan meski sering ada di formulir kebutuhan:
+  -- preferensi jenis kelamin dan batas usia. Keduanya diskriminatif, dan
+  -- menyediakan kotaknya berarti mengundang pemakaiannya.
+  main_duties             TEXT[]     NOT NULL DEFAULT '{}',  -- tugas utama, satu baris satu tugas
+  department              TEXT,                              -- departemen / divisi
+  reports_to              TEXT,                              -- jabatan atasan langsung
+  work_arrangement        TEXT,                              -- WFO / WFH / hybrid
+  benefits                TEXT[]     NOT NULL DEFAULT '{}',  -- tunjangan di luar gaji pokok
+  client_interview_stages TEXT[]     NOT NULL DEFAULT '{}',  -- tahapan wawancara di sisi klien
+
   CONSTRAINT chk_salary_range CHECK (salary_max IS NULL OR salary_min IS NULL OR salary_max >= salary_min),
   -- lowongan terbuka wajib punya jawaban kenapa kandidat sebelumnya gagal
   CONSTRAINT chk_reason_required_when_open

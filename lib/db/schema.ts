@@ -221,6 +221,20 @@ export const jobs = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
     deletedAt: timestamp('deleted_at', { withTimezone: true, mode: 'date' }),
+
+    /**
+     * Enam isian formulir kebutuhan klien yang normatif di praktik HR, tapi
+     * belum ada di skema versi 1.0. Ditambahkan 26 Agustus 2026 lewat migrasi
+     * `0001_lowongan_formulir_normatif`.
+     *
+     * Yang sengaja tidak ada: preferensi jenis kelamin dan batas usia.
+     */
+    mainDuties: text('main_duties').array().notNull().default(sql`'{}'`),
+    department: text('department'),
+    reportsTo: text('reports_to'),
+    workArrangement: text('work_arrangement'),
+    benefits: text('benefits').array().notNull().default(sql`'{}'`),
+    clientInterviewStages: text('client_interview_stages').array().notNull().default(sql`'{}'`),
   },
   (t) => [
     index('idx_jobs_client').on(t.clientId).where(sql`${t.deletedAt} IS NULL`),

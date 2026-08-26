@@ -1,4 +1,4 @@
-import { and, arrayContains, desc, eq, ilike, isNull, or, sql } from 'drizzle-orm'
+import { and, arrayContains, count, desc, eq, ilike, isNull, or, sql } from 'drizzle-orm'
 import { db } from '@/lib/db'
 import {
   candidateConsents,
@@ -308,4 +308,19 @@ export async function catatDokumen(nilai: {
 
     return dokumen!.id
   })
+}
+
+/**
+ * Berapa kandidat yang ada sama sekali.
+ *
+ * Dipakai untuk membedakan dua keadaan kosong yang butuh saran berbeda:
+ * "belum ada kandidat di basis data" dan "semua kandidat sudah dikaitkan ke
+ * lowongan ini".
+ */
+export async function jumlahKandidat(): Promise<number> {
+  const [baris] = await db
+    .select({ n: count() })
+    .from(candidates)
+    .where(isNull(candidates.deletedAt))
+  return baris?.n ?? 0
 }

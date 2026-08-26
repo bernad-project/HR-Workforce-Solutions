@@ -55,3 +55,16 @@ export function PesanGalat({ pesan }: { pesan: string | null }) {
     </p>
   )
 }
+
+/** Kabar baik yang perlu terlihat, untuk aksi yang tidak berpindah halaman. */
+export function PesanSukses({ pesan }: { pesan: string | null | undefined }) {
+  if (!pesan) return null
+  return (
+    <p
+      role="status"
+      className="rounded-md bg-[#dcfce7] px-3 py-2 text-sm text-[var(--color-aman)]"
+    >
+      {pesan}
+    </p>
+  )
+}

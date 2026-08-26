@@ -18,7 +18,7 @@ const MENU: Menu[] = [
   { label: 'Klien', href: '/klien', siap: true },
   { label: 'Lowongan', href: '/lowongan', siap: true },
   { label: 'Kandidat', href: '/kandidat', siap: true },
-  { label: 'Pipeline', href: '/pipeline', siap: false },
+  { label: 'Pipeline', href: '/pipeline', siap: true },
   { label: 'Penempatan', href: '/penempatan', siap: false, hanyaOwner: true },
   { label: 'Tagihan', href: '/tagihan', siap: false, hanyaOwner: true },
 ]

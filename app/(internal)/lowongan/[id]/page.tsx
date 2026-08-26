@@ -6,8 +6,17 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BarisRincian, JudulHalaman, Rincian } from '@/components/halaman'
 import { ambilLowongan } from '@/lib/db/queries/lowongan'
+import {
+  daftarPengajuanLowongan,
+  kandidatBelumDiajukan,
+  proteksiKlien,
+} from '@/lib/db/queries/pengajuan'
+import { jumlahKandidat } from '@/lib/db/queries/kandidat'
+import { BadgeTahap } from '@/components/tahap'
+import { Tabel, Td, Th } from '@/components/halaman'
 import { formatRupiah, formatTanggal, formatWaktu } from '@/lib/format'
 import { STATUS_LOWONGAN } from '@/lib/validation/lowongan'
+import { KaitkanKandidat, type PilihanKandidat } from './kaitkan-kandidat'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,6 +28,8 @@ export async function generateMetadata({
   const baris = await ambilLowongan((await params).id)
   return { title: `${baris?.lowongan.title ?? 'Lowongan'} · Modul Headhunter` }
 }
+
+type Pencarian = Promise<{ kandidat?: string }>
 
 const NADA: Record<string, NadaBadge> = {
   draft: 'netral',
@@ -45,14 +56,45 @@ function DaftarPoin({ poin, kosong }: { poin: string[]; kosong: string }) {
 
 export default async function HalamanDetailLowongan({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Pencarian
 }) {
   const { id } = await params
   const baris = await ambilLowongan(id)
   if (!baris) notFound()
 
   const { lowongan: l, klien } = baris
+  const cariKandidat = (await searchParams).kandidat?.trim() ?? ''
+
+  const [pengajuan, calon, proteksi, totalKandidat] = await Promise.all([
+    daftarPengajuanLowongan(id),
+    kandidatBelumDiajukan(id, cariKandidat || undefined),
+    proteksiKlien(klien.id),
+    jumlahKandidat(),
+  ])
+
+  const pilihan: PilihanKandidat[] = calon.map((k) => {
+    const p = proteksi.get(k.id)
+    return {
+      id: k.id,
+      fullName: k.fullName,
+      currentTitle: k.currentTitle,
+      currentCompany: k.currentCompany,
+      domicileCity: k.domicileCity,
+      yearsExperience: k.yearsExperience,
+      expectedSalary: k.expectedSalary,
+      proteksi:
+        p && p.terlindungi
+          ? {
+              berakhirPada: p.berakhirPada,
+              pertamaDiajukan: p.pertamaDiajukan,
+              jobTitle: p.jobTitle,
+            }
+          : null,
+    }
+  })
 
   const gaji =
     l.salaryMin !== null && l.salaryMax !== null
@@ -113,6 +155,26 @@ export default async function HalamanDetailLowongan({
           <div className="grid gap-6 sm:grid-cols-2">
             <Card>
               <CardHeader>
+                <CardTitle>Tugas utama sehari-hari</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <DaftarPoin poin={l.mainDuties} kosong="Belum diisi." />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Tunjangan di luar gaji pokok</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <DaftarPoin poin={l.benefits} kosong="Belum diisi." />
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-2">
+            <Card>
+              <CardHeader>
                 <CardTitle>Syarat wajib</CardTitle>
               </CardHeader>
               <CardContent>
@@ -129,6 +191,94 @@ export default async function HalamanDetailLowongan({
               </CardContent>
             </Card>
           </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Kandidat di lowongan ini</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {pengajuan.length === 0 ? (
+                <p className="text-sm text-[var(--color-redup)]">
+                  Belum ada kandidat yang dikaitkan. Setiap kandidat yang dikaitkan langsung punya
+                  riwayat perpindahan tahapnya sendiri.
+                </p>
+              ) : (
+                <Tabel>
+                  <thead>
+                    <tr>
+                      <Th>Kandidat</Th>
+                      <Th>Tahap</Th>
+                      <Th>Diajukan ke klien</Th>
+                      <Th>Terakhir bergerak</Th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pengajuan.map((p) => (
+                      <tr key={p.id} className="hover:bg-[var(--color-permukaan)]">
+                        <Td>
+                          <Link
+                            href={`/pengajuan/${p.id}`}
+                            className="font-medium text-[var(--color-utama)] hover:underline"
+                          >
+                            {p.candidateName}
+                          </Link>
+                          {p.candidateTitle ? (
+                            <p className="text-xs text-[var(--color-redup)]">{p.candidateTitle}</p>
+                          ) : null}
+                        </Td>
+                        <Td>
+                          <BadgeTahap tahap={p.stage} />
+                        </Td>
+                        <Td className="text-[var(--color-redup)] whitespace-nowrap">
+                          {p.submittedAt ? formatWaktu(p.submittedAt) : '—'}
+                        </Td>
+                        <Td className="text-[var(--color-redup)] whitespace-nowrap">
+                          {formatWaktu(p.stageUpdatedAt)}
+                        </Td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Tabel>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card id="kaitkan">
+            <CardHeader>
+              <CardTitle>Kaitkan kandidat ke lowongan ini</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <KaitkanKandidat
+                jobId={l.id}
+                kandidat={pilihan}
+                cari={cariKandidat}
+                adaKandidatSamaSekali={totalKandidat > 0}
+              />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Tahapan wawancara di sisi klien</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {l.clientInterviewStages.length === 0 ? (
+                <p className="text-sm text-[var(--color-redup)]">
+                  Belum diisi. Kandidat biasanya menanyakan ini lebih dulu sebelum bersedia
+                  diajukan.
+                </p>
+              ) : (
+                <ol className="space-y-2">
+                  {l.clientInterviewStages.map((tahap, i) => (
+                    <li key={i} className="flex gap-3 text-sm">
+                      <span className="angka text-[var(--color-redup)]">{i + 1}.</span>
+                      <span>{tahap}</span>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </CardContent>
+          </Card>
 
           <Card>
             <CardHeader>
@@ -167,6 +317,9 @@ export default async function HalamanDetailLowongan({
                 <BarisRincian label="Gaji pokok">
                   <span className="angka">{gaji}</span>
                 </BarisRincian>
+                <BarisRincian label="Departemen">{l.department ?? '—'}</BarisRincian>
+                <BarisRincian label="Atasan langsung">{l.reportsTo ?? '—'}</BarisRincian>
+                <BarisRincian label="Pola kerja">{l.workArrangement ?? '—'}</BarisRincian>
                 <BarisRincian label="Hubungan kerja">{l.employmentType ?? '—'}</BarisRincian>
                 <BarisRincian label="Target mulai">
                   {l.targetStartDate ? formatTanggal(l.targetStartDate) : '—'}
@@ -185,12 +338,14 @@ export default async function HalamanDetailLowongan({
 
           <Card>
             <CardHeader>
-              <CardTitle>Kandidat</CardTitle>
+              <CardTitle>Kandidat di lowongan ini</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-[var(--color-redup)]">
-                Mengaitkan kandidat ke lowongan, papan tahapan, dan jejak audit perpindahannya
-                dibangun di Fase 2.
+              <p className="angka text-2xl font-semibold">{pengajuan.length}</p>
+              <p className="mt-1 text-sm text-[var(--color-redup)]">
+                {pengajuan.length === 0
+                  ? 'Belum ada. Kaitkan kandidat lewat kotak di bawah.'
+                  : `${pengajuan.filter((p) => p.submittedAt !== null).length} di antaranya sudah diajukan ke klien.`}
               </p>
             </CardContent>
           </Card>

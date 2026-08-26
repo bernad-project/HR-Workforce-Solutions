@@ -121,9 +121,23 @@ export type KeadaanForm = {
   nilai: Record<string, string>
   /** Diisi bila aksi butuh persetujuan tambahan dari pengguna, misalnya kandidat serupa. */
   konfirmasi?: { pesan: string; serupa: { id: string; nama: string; keterangan: string }[] } | null
+  /**
+   * Kabar baik yang perlu terlihat, untuk aksi yang tetap di halaman yang sama.
+   *
+   * Dibedakan dari `pesan` karena `pesan` selalu digambar merah. Aksi yang
+   * berpindah halaman tidak memerlukannya — hasilnya sudah terlihat di halaman
+   * tujuan.
+   */
+  sukses?: string | null
 }
 
-export const KEADAAN_AWAL: KeadaanForm = { pesan: null, galat: {}, nilai: {}, konfirmasi: null }
+export const KEADAAN_AWAL: KeadaanForm = {
+  pesan: null,
+  galat: {},
+  nilai: {},
+  konfirmasi: null,
+  sukses: null,
+}
 
 /**
  * Membaca kembali isi form untuk dikembalikan ke pengguna.
