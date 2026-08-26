@@ -13,7 +13,8 @@
     "test": "vitest run",
     "db:migrate": "tsx scripts/migrate.mts",
     "db:seed": "tsx scripts/seed.mts",
-    "db:test-rules": "tsx scripts/test-rules.mts",
+    "db:periksa-skema": "tsx scripts/periksa-skema.mts",
+    "db:test-rules": "npm run db:periksa-skema && tsx scripts/test-rules.mts",
     "user:tambah": "tsx scripts/tambah-pengguna.mts"
   },
   "dependencies": {

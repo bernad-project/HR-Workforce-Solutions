@@ -6,7 +6,6 @@
  * otomatis saat penempatan ke Vercel. Kalau ketiganya punya salinan sendiri,
  * cepat atau lambat salah satunya akan menyimpang.
  */
-import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { eq } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/node-postgres'
@@ -28,22 +27,20 @@ export function buatPool(url: string): Pool {
 }
 
 /**
- * Menjaga agar skema yang diuji dan skema yang dijalankan tidak pernah berbeda.
- * Migrasi 0000 adalah salinan persis `docs/schema.sql`.
+ * Menjalankan migrasi berbasis berkas.
+ *
+ * Tidak ada pemeriksaan kesetaraan skema di sini dengan sengaja. Sebelumnya
+ * fungsi ini menolak jalan bila `drizzle/0000_init.sql` tidak sama persis
+ * dengan `docs/schema.sql` — penjagaan yang hanya benar selama migrasinya cuma
+ * satu, dan langsung menghalangi migrasi kedua yang sah.
+ *
+ * Kesetaraan tetap dijaga, tapi di tempat yang tepat: `npm run db:periksa-skema`
+ * membangun dua basis data sementara — satu dari `docs/schema.sql`, satu dari
+ * seluruh migrasi — lalu membandingkan bentuk akhirnya. Pemeriksaan itu perlu
+ * Postgres di komputer sendiri, jadi ia dijalankan sebelum commit, bukan saat
+ * penempatan.
  */
-export function periksaSalinanSkema(): void {
-  const asli = readFileSync(resolve(AKAR, 'docs/schema.sql'), 'utf8')
-  const migrasi = readFileSync(resolve(AKAR, 'drizzle/0000_init.sql'), 'utf8')
-  if (asli !== migrasi) {
-    throw new Error(
-      'drizzle/0000_init.sql tidak lagi sama dengan docs/schema.sql.\n' +
-        'Skema yang diuji dan skema yang dijalankan harus identik. Samakan dulu, baru migrasi.',
-    )
-  }
-}
-
 export async function jalankanMigrasi(url: string): Promise<void> {
-  periksaSalinanSkema()
   const pool = buatPool(url)
   try {
     await migrate(drizzle(pool), { migrationsFolder: resolve(AKAR, 'drizzle') })

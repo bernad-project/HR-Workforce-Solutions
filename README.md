@@ -66,7 +66,8 @@ Masuk dengan email dan kata sandi yang Anda tulis di `OWNER_EMAIL` dan
 | `npm run dev` | Menjalankan aplikasi untuk dicoba di komputer sendiri |
 | `npm run db:migrate` | Membuat atau memperbarui tabel. Aman diulang. |
 | `npm run db:seed` | Membuat akun pemilik. Tidak menimpa akun yang sudah ada. |
-| `npm run db:test-rules` | Menjalankan 10 uji aturan bisnis. **Jalankan setiap kali skema disentuh.** |
+| `npm run db:periksa-skema` | Memastikan `docs/schema.sql` dan seluruh migrasi menghasilkan skema yang sama persis. |
+| `npm run db:test-rules` | Memeriksa kesetaraan skema di atas, lalu menjalankan uji aturan bisnis. **Jalankan setiap kali skema disentuh.** |
 | `npm run test` | Menjalankan uji perhitungan |
 | `npm run typecheck` | Memeriksa kesalahan ketik di seluruh kode |
 | `npm run build` | Menyiapkan versi produksi |
