@@ -34,37 +34,27 @@ export default async function TataLetakInternal({ children }: { children: React.
 
   return (
     <div className="min-h-screen">
+      {/*
+        Menu tampil di SEMUA ukuran layar.
+
+        Sebelumnya ia disembunyikan di bawah 768px. Akibatnya pemilik yang
+        membuka sistem ini dari HP bisa masuk lalu mentok di dasbor — tidak ada
+        satu pun tautan menuju Klien, Lowongan, atau Kandidat. SPEC §13 memang
+        menolak aplikasi seluler, tapi yang diminta sebagai gantinya adalah web
+        yang responsif, dan menu yang hilang bukan itu.
+
+        Di layar sempit menunya bisa digeser mendatar, bukan dilipat ke balik
+        tombol — supaya seluruh tujuan tetap terlihat sekilas tanpa perlu diklik
+        dulu.
+      */}
       <header className="border-b border-[var(--color-garis)] bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-          <div className="flex items-center gap-6">
-            <Link href="/dasbor" className="text-sm font-semibold">
-              Modul Headhunter
-            </Link>
-            <nav className="hidden items-center gap-1 md:flex">
-              {menuTerlihat.map((m) =>
-                m.siap ? (
-                  <Link
-                    key={m.href}
-                    href={m.href}
-                    className="rounded-md px-3 py-1.5 text-sm text-[var(--color-tinta)] hover:bg-[var(--color-permukaan)]"
-                  >
-                    {m.label}
-                  </Link>
-                ) : (
-                  <span
-                    key={m.href}
-                    title="Belum dibangun"
-                    className="cursor-default rounded-md px-3 py-1.5 text-sm text-[var(--color-redup)] opacity-60"
-                  >
-                    {m.label}
-                  </span>
-                ),
-              )}
-            </nav>
-          </div>
+          <Link href="/dasbor" className="shrink-0 text-sm font-semibold">
+            Modul Headhunter
+          </Link>
 
           <div className="flex items-center gap-3">
-            <div className="text-right">
+            <div className="hidden text-right sm:block">
               <p className="text-sm leading-tight">{sesi.user.name}</p>
               <p className="text-xs leading-tight text-[var(--color-redup)]">
                 {peran === 'owner' ? 'Pemilik' : 'Perekrut'}
@@ -77,6 +67,30 @@ export default async function TataLetakInternal({ children }: { children: React.
             </form>
           </div>
         </div>
+
+        <nav className="mx-auto max-w-6xl overflow-x-auto px-2 pb-2">
+          <div className="flex items-center gap-1">
+            {menuTerlihat.map((m) =>
+              m.siap ? (
+                <Link
+                  key={m.href}
+                  href={m.href}
+                  className="rounded-md px-3 py-1.5 text-sm whitespace-nowrap text-[var(--color-tinta)] hover:bg-[var(--color-permukaan)]"
+                >
+                  {m.label}
+                </Link>
+              ) : (
+                <span
+                  key={m.href}
+                  title="Belum dibangun"
+                  className="cursor-default rounded-md px-3 py-1.5 text-sm whitespace-nowrap text-[var(--color-redup)] opacity-60"
+                >
+                  {m.label}
+                </span>
+              ),
+            )}
+          </div>
+        </nav>
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
